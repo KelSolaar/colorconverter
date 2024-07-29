@@ -7,7 +7,6 @@ Please note that there are a number of hard-coded constants for CAMs and for spe
 ```sh
 Options:
 
-  -h, --help            show this help message and exit
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
                         Default: 8
 

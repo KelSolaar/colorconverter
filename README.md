@@ -76,5 +76,5 @@ SPECTRUM:
                         
 
 WAVELENGTH:
-  --wave WAVE           Wavelength in nm
+  --wave                Wavelength in nm
 

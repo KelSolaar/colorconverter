@@ -21,8 +21,8 @@ Options:
                         {Bianco 2010, Bianco PC 2010, Bradford, CAT02, CAT02 Brill 2008, CAT16, CMCCAT97, CMCCAT2000,
                         Fairchild, Sharp, Von Kries, XYZ Scaling, None}
                         
-  --illuminant_list    Which list of illuminants to use {CIE, ISO_7589, All}
-  --plotpath           Output spectral plot path; plot is not saved if argument is omitted. SVG extension is added if not provided
+  --illuminant_list     Which list of illuminants to use {CIE, ISO_7589, All}
+  --plotpath            Output spectral plot path; plot is not saved if argument is omitted. SVG extension is added if not provided
 
 CIELAB:
   --lstar LSTAR         Lightness value, 0-100

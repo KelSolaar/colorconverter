@@ -10,9 +10,12 @@ Options:
   -h, --help            show this help message and exit
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
                         Default: 8
+
   --precalc             Precalculated data in JSON format
+
   --observer            Standard observer {CIE 1931 2 Degree Standard Observer, CIE 1964 10 Degree Standard Observer}
                         Default: CIE 1931 2 Degree Standard Observer
+
   --input_illuminant    Standard illuminant of input values
                         {A, D50, D55, D65, D75, FL1, FL2, FL3, FL3.1, FL3.2, FL3.3, FL3.4, FL3.5, FL3.6, FL3.7, FL3.8,
                         FL3.9, FL3.10, FL3.11, FL3.12, FL3.13, FL3.14, FL3.15, FL4, FL5, FL6, FL7, FL8, FL9, FL10, FL11,
@@ -27,12 +30,13 @@ Options:
                         
   --illuminant_list     Which list of illuminants to use {CIE, ISO_7589, All}
                         Default: All
+
   --plotpath            Output spectral plot path; plot is not saved if argument is omitted. SVG extension is added if not provided
 
 CIELAB:
-  --lstar LSTAR         Lightness value, 0-100
-  --astar ASTAR         a* value, any bit depth
-  --bstar BSTAR         b* value, any bit depth
+  --lstar               Lightness value, 0-100
+  --astar               a* value, any bit depth
+  --bstar               b* value, any bit depth
 
 CIELCHab:
   --lchab_l_val         Lightness value, 0-100
@@ -40,9 +44,9 @@ CIELCHab:
   --lchab_ab_val        ab value, any bit depth
 
 CIELUV:
-  --l_val L_VAL         Lightness value, any bit depth, 0-100
-  --u_val U_VAL         u* value, any bit depth
-  --v_val V_VAL         v* value, any bit depth
+  --l_val               Lightness value, any bit depth, 0-100
+  --u_val               u* value, any bit depth
+  --v_val               v* value, any bit depth
 
 CIELCHuv:
   --lchuv_l_val         Lightness value, 0-100
@@ -50,19 +54,19 @@ CIELCHuv:
   --lchuv_uv_val        uv value, any bit depth
 
 CIEXYZ:
-  --x_val X_VAL         X value, any bit depth, a mix of all three cone responses, 0-1
-  --y_val Y_VAL         Y value, luminance, any bit depth, a mix of L and M responses, 0-1
-  --z_val Z_VAL         Z value, similar to Blue in CIERGB, solely made up of the S cone response, 0-1
+  --x_val               X value, any bit depth, a mix of all three cone responses, 0-1
+  --y_val               Y value, luminance, any bit depth, a mix of L and M responses, 0-1
+  --z_val               Z value, similar to Blue in CIERGB, solely made up of the S cone response, 0-1
 
 RGB:
-  --red RED             Red value, any bit depth
-  --green GREEN         Green value, any bit depth
-  --blue BLUE           Blue value, any bit depth
+  --red                 Red value, any bit depth
+  --green               Green value, any bit depth
+  --blue                Blue value, any bit depth
   --input_colorspace    RGB color space of input values
 
 SPECTRUM:
-  --start START         Start of distribution, between 360-790 nm
-  --stop STOP           End of distribution, between 400-830 nm
+  --start               Start of distribution, between 360-790 nm
+  --stop                End of distribution, between 400-830 nm
   --interval            Interval between measurements, in nm, 1-20
   --spectype            Spectrum type {Emissive, Reflective, Transmissive}
   --data                Spectral data - a list of decimal values (preferrably to 6+ places), with spaces in between, unquoted, unbracketed, 0-1

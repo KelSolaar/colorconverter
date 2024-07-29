@@ -3,37 +3,17 @@ Color Conversion Utility
 ========================
 
 This script provides a comprehensive set of functions and CLI options to
-convert between various color models using the Colour Science Python library.
+convert between various color models and spaces using the Colour Science Python library.
 It also offers plotting and analysis features.
 
-Features:
-- Convert between color models (e.g., RGB, Lab, LCH)
-- Plot histograms and CDFs
-- Apply filters
-- Analyze image statistic
-
-Authors:
-- Jeff Nova
-- Alexey Tikhonov
-
-CHANGELOG
-27 Aug 2023 - Upgrade to colour 0.4.3 - added Kirk Yrg color space, PLASA ANSI E1.54
-RGB, and changed IPTMunish to IPTRagoo
-
-3 Sep 2023 - Port to new RGB_to_XYZ definition used in 0.4.3
-
-4 October 2023 - Refactoring numerous computations, as well as removing the processing
-groups
 """
 
-import timeit
-import sys
-import warnings
-# from multiprocessing import Manager,Pool
+
 import argparse
 import json
 from matplotlib.pyplot import close, grid, savefig, xticks, yticks
 import numpy as np
+import sys
 
 from colour import set_domain_range_scale, CCS_ILLUMINANTS, chromatic_adaptation, CMY_to_CMYK, colorimetric_purity, colour_fidelity_index, colour_quality_scale, colour_rendering_index, complementary_wavelength, dominant_wavelength, excitation_purity, IPT_hue_angle, is_within_macadam_limits, is_within_pointer_gamut, Lab_to_LCHab, Lab_to_XYZ, LCHuv_to_Luv, lightness, luminance, luminous_efficacy, luminous_efficiency, luminous_flux, Luv_to_LCHuv, Luv_to_XYZ, MEDIA_PARAMETERS_KIM2009, MSDS_CMFS, munsell_value, normalised_primary_matrix, RGB_COLOURSPACES, RGB_luminance, RGB_to_CMY, RGB_to_HCL, RGB_to_HSL, RGB_to_HSV, RGB_to_IHLS, RGB_to_Prismatic, RGB_to_RGB, RGB_to_XYZ, RGB_to_YCbCr, RGB_to_YcCbcCrc, RGB_to_YCoCg, sd_to_XYZ, SDS_ILLUMINANTS, spectral_similarity_index, SpectralDistribution, SpectralShape, TVS_ILLUMINANTS, TVS_ILLUMINANTS_HUNTERLAB, UCS_to_uv, uv_to_CCT, VIEWING_CONDITIONS_CAM16, VIEWING_CONDITIONS_CIECAM02, VIEWING_CONDITIONS_CIECAM16, VIEWING_CONDITIONS_HELLWIG2022, VIEWING_CONDITIONS_HUNT, VIEWING_CONDITIONS_KIM2009, VIEWING_CONDITIONS_LLAB, VIEWING_CONDITIONS_RLAB, VIEWING_CONDITIONS_ZCAM, wavelength_to_XYZ, xy_to_Luv_uv, xy_to_XYZ, xy_to_XYZ, xyY_to_munsell_colour, XYZ_to_ATD95, XYZ_to_CAM16, XYZ_to_CIECAM02, XYZ_to_CIECAM16, XYZ_to_DIN99, XYZ_to_hdr_CIELab, XYZ_to_hdr_IPT, XYZ_to_Hellwig2022, XYZ_to_Hunt, XYZ_to_Hunter_Lab, XYZ_to_Hunter_Rdab, XYZ_to_ICaCb, XYZ_to_ICtCp, XYZ_to_IgPgTg, XYZ_to_IPT, XYZ_to_IPT_Ragoo2021, XYZ_to_Jzazbz, XYZ_to_K_ab_HunterLab1966, XYZ_to_Kim2009, XYZ_to_Lab, XYZ_to_LLAB, XYZ_to_Luv, XYZ_to_Luv, XYZ_to_Nayatani95, XYZ_to_Oklab, XYZ_to_OSA_UCS, XYZ_to_ProLab, XYZ_to_RGB, XYZ_to_RLAB, XYZ_to_UCS, XYZ_to_UVW, XYZ_to_xy, XYZ_to_xyY, XYZ_to_Yrg, XYZ_to_ZCAM, yellowness
 from colour.appearance import D_FACTOR_RLAB
@@ -45,8 +25,6 @@ from colour.recovery import XYZ_to_sd_Jakob2019
 from colour.adaptation import chromatic_adaptation_VonKries
 from colour.notation import RGB_to_HEX
 
-# SUPPRESS WARNINGS
-#warnings.filterwarnings("ignore")
 
 # FACTOR FOR NORMALIZATION OF VALUES TO 0:1 DEPENDING ON BITDEPTH
 BITDEPTH_FACTOR = {'8':255,'15+1':32768,'16':65535,'32':1}
@@ -68,8 +46,9 @@ CIEXYZ_DEPTH_VALUES = {
     '16': (0, 1),
     '32': (0, 1)
 }
-VIS_SPECTRUM_MIN = 360  # nm
-VIS_SPECTRUM_MAX = 830  # nm
+VIS_SPECTRUM_MIN = 360  # nm [CIE 015:2018, pg. 21]
+VIS_SPECTRUM_MAX = 830  # nm [CIE 015:2018, pg. 21]
+
 
 # CIE ILLUMINANTS
 # https://www.liquisearch.com/standard_illuminant/white_point/white_points_of_standard_illuminants
@@ -79,7 +58,8 @@ VIS_SPECTRUM_MAX = 830  # nm
 # "Photography - Illuminants for sensitometry - Specifications for daylight, incandescent tungsten and printer"
 # https://www.iso.org/standard/33979.html
 
-# ACES, Blackmagic Wide Gamut, and DCI-P3 are outliers used only by a small number of spaces in cinema and visual effects
+# ACES, Blackmagic Wide Gamut, and DCI-P3 illuminants are used only by a small number of
+# spaces in cinema and visual effects
 
 # Illuminants C and E are present in the RGB and CIE_ALL lists because we have color spaces that use them
 RGB_ILLUMINANTS_LIST = ['A', 'C', 'D50', 'D55', 'D65', 'D75', 'E', 'FL1',
@@ -131,7 +111,7 @@ STANDARD_OBSERVERS = ['CIE 1931 2 Degree Standard Observer',
                       'CIE 1964 10 Degree Standard Observer']
 
 # RGB COLORSPACES SUPPORTED BY CSS4
-RGB_CSS_COLORSPACES=['sRGB', 'A98 RGB', 'Display P3', 'ITU-R BT.2020',
+RGB_CSS_COLORSPACES=['sRGB', 'Adobe RGB (1998)', 'Display P3', 'ITU-R BT.2020',
                      'ProPhoto RGB']
 
 # CAM constants
@@ -391,6 +371,25 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class SetToNone(argparse.Action):
+    """ Allow 'None' as a choice for chromatic adaptation transforms """
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values == ['None']:
+            setattr(namespace, self.dest, None)
+        else:
+            setattr(namespace, self.dest, values)
+
+
+def space_separated(lst):
+    """return space separated values from list"""
+    return " ".join(map(str, lst))
+
+
+def space_separated_nosci(lst):
+    """return space separated values from list and suppress scientific notation"""
+    return " ".join(f"{x:.5f}" for x in lst)
+
+
 def denormalize(a, *factors):
     """denormalize array of coordinates using different factors when needed (e.g. HSV)"""
     precision = 3
@@ -437,8 +436,8 @@ def parse_arguments():
     # ILLUMINANT OF INPUT VALUES
     parser.add_argument("--input_illuminant", type=str, choices=CIE_ILLUMINANTS_LIST, help="Standard illuminant of input values", default="D65")
 
-    # WHICH CATS TO USE
-    parser.add_argument("--cat", type=str, nargs='*', choices=CHROMATIC_ADAPTATION_TRANSFORMS, help="Chromatic Adaptation Transform")
+    # WHICH CHROMATIC ADAPTATION TRANSFORMS TO USE
+    parser.add_argument("--cat", type=str, nargs='*', choices=CHROMATIC_ADAPTATION_TRANSFORMS + ['None'], default=CHROMATIC_ADAPTATION_TRANSFORMS, action=SetToNone, help="Chromatic Adaptation Transform")
 
     # WHICH ILLUMINANTS TO USE
     parser.add_argument("--illuminant_list", type=str, choices=['CIE', 'ISO_7589', 'All'], default='All')
@@ -478,11 +477,11 @@ def parse_arguments():
 
     # RGB ARGUMENTS
     rgb = parser.add_argument_group('RGB')
-    rgb.add_argument("-r", "--red", type=float, help="Red value, any bit depth")
-    rgb.add_argument("-g", "--green", type=float, help="Green value, any bit depth")
-    rgb.add_argument("-b", "--blue", type=float, help="Blue value, any bit depth")
+    rgb.add_argument("--red", type=float, help="Red value, any bit depth")
+    rgb.add_argument("--green", type=float, help="Green value, any bit depth")
+    rgb.add_argument("--blue", type=float, help="Blue value, any bit depth")
     # color space name from colour-science lib
-    rgb.add_argument("-cs", "--input_colorspace", type=str, help="RGB color space of input values", default="sRGB")
+    rgb.add_argument("--input_colorspace", type=str, help="RGB color space of input values", default="sRGB")
 
     # SPECTRAL ARGUMENTS
     spectrum = parser.add_argument_group('SPECTRUM')
@@ -529,7 +528,6 @@ def parse_arguments():
     return args, model
 
 
-
 def validate_rgb_values(bitdepth, red, green, blue):
     """Check that RGB values are within the range of the chosen bit depth and additionally calculate normalization factor from bitdepth."""
     if bitdepth not in BITDEPTH_FACTOR:
@@ -543,8 +541,6 @@ def validate_rgb_values(bitdepth, red, green, blue):
         raise ValueError(f"RGB values are out of range for the specified bit depth: {bitdepth}")
 
     return red, green, blue, max_val
-
-
 
 
 def validate_cielab_values(bitdepth, lstar, astar, bstar):
@@ -567,7 +563,6 @@ def validate_cielab_values(bitdepth, lstar, astar, bstar):
     return lstar, astar, bstar, factor
 
 
-
 def validate_cielchab_values(bitdepth, lchab_l_val, lchab_ch_val, lchab_ab_val):
     """Check that CIELCHab values are within range and additionally calculate normalization factor from bitdepth."""
 
@@ -579,20 +574,17 @@ def validate_cielchab_values(bitdepth, lchab_l_val, lchab_ch_val, lchab_ab_val):
         'lchab_ch_val': (0, 230),
         'lchab_ab_val': (0, 360),
     }
-
     values = {
         'lchab_l_val': float(lchab_l_val),
         'lchab_ch_val': float(lchab_ch_val),
         'lchab_ab_val': float(lchab_ab_val),
     }
-
     for val_name, (min_val, max_val) in value_ranges.items():
         if not (min_val <= values[val_name] <= max_val):
             raise ValueError(f"{val_name} is out of range")
 
     factor = BITDEPTH_FACTOR[bitdepth]
     return values['lchab_l_val'], values['lchab_ch_val'], values['lchab_ab_val'], factor
-
 
 
 def validate_cieluv_values(bitdepth, l_val, u_val, v_val):
@@ -607,14 +599,12 @@ def validate_cieluv_values(bitdepth, l_val, u_val, v_val):
         '16': {'l_val': (0, 65535), 'u_v_val': (-51200, 51200)},
         '32': {'l_val': (0, 1), 'u_v_val': (-1, 1)},
     }
-
     ranges = value_ranges[bitdepth]
     values = {
         'l_val': float(l_val),
         'u_val': float(u_val),
         'v_val': float(v_val),
     }
-
     if not (ranges['l_val'][0] <= values['l_val'] <= ranges['l_val'][1] and
             ranges['u_v_val'][0] <= values['u_val'] <= ranges['u_v_val'][1] and
             ranges['u_v_val'][0] <= values['v_val'] <= ranges['u_v_val'][1]):
@@ -622,7 +612,6 @@ def validate_cieluv_values(bitdepth, l_val, u_val, v_val):
 
     factor = BITDEPTH_FACTOR[bitdepth]
     return values['l_val'], values['u_val'], values['v_val'], factor
-
 
 
 def validate_cielchuv_values(bitdepth, lchuv_l_val, lchuv_ch_val, lchuv_uv_val):
@@ -644,7 +633,6 @@ def validate_cielchuv_values(bitdepth, lchuv_l_val, lchuv_ch_val, lchuv_uv_val):
 
     factor = BITDEPTH_FACTOR[bitdepth]
     return lchuv_l_val, lchuv_ch_val, lchuv_uv_val, factor
-
 
 
 def validate_ciexyz_values(bitdepth, x_val, y_val, z_val):
@@ -700,7 +688,6 @@ def validate_spectrum_values(start, stop, interval, data):
     return start, stop, interval, data
 
 
-
 def validate_wave_value(wave):
     """check that wavelength in nm is within the visible spectrum"""
 
@@ -730,9 +717,8 @@ def convert_RGB_to_RGB(colorspaceid):
                 break
 
 
-
 def convert_RGB_no_XYZ(rgb_norm, p, wt, illuminant = False):
-    """convert RGB to spaces not requiring xyz intermediary"""
+    """convert RGB to spaces not requiring XYZ intermediary"""
 
     cmy = RGB_to_CMY(np.array(rgb_norm))
     cmyk = np.around(CMY_to_CMYK(cmy), 2)
@@ -786,6 +772,7 @@ def chromatic_adaptations_in_convert_with_XYZ(ciexyz, illuminant_XYZ_D65, illumi
     ciexyz_C = chromatic_adaptation_VonKries(ciexyz, illuminant_XYZ_C, illuminant_in_XYZ, transform)
     return ciexyz_D65, ciexyz_C
 
+
 def process_CIELCHuv():
     intermediate_cieluv = LCHuv_to_Luv(cielchuv)
     ciexyz_val = Luv_to_XYZ(intermediate_cieluv, illuminant_in_XY)
@@ -793,11 +780,13 @@ def process_CIELCHuv():
     ciexyz_C_val = Luv_to_XYZ(intermediate_cieluv, illuminant_XY_C)
     return ciexyz_val, ciexyz_D65_val, ciexyz_C_val
 
+
 def process_CIELAB_or_CIELCHab():
     ciexyz_val = Lab_to_XYZ(cielab, illuminant_in_XY)
     ciexyz_D65_val = Lab_to_XYZ(cielab, illuminant_XY_D65)
     ciexyz_C_val = Lab_to_XYZ(cielab, illuminant_XY_C)
     return ciexyz_val, ciexyz_D65_val, ciexyz_C_val
+
 
 def process_CIELUV():
     ciexyz_val = Luv_to_XYZ(cieluv, illuminant_in_XY)
@@ -805,10 +794,12 @@ def process_CIELUV():
     ciexyz_C_val = Luv_to_XYZ(cieluv, illuminant_XY_C)
     return ciexyz_val, ciexyz_D65_val, ciexyz_C_val
 
+
 def process_CIEXYZ():
     ciexyz_val = (float(args.x_val), float(args.y_val), float(args.z_val))
     ciexyz_D65_val = chromatic_adaptations_in_convert_with_XYZ(ciexyz_val, illuminant_XYZ_D65, illuminant_in_XYZ)
     return ciexyz_val, ciexyz_D65_val, None
+
 
 def process_Spectrum():
     sd_cmfs = MSDS_CMFS[observer]
@@ -816,6 +807,7 @@ def process_Spectrum():
     ciexyz_val = (sd_to_XYZ(sd, sd_cmfs, illuminant_sds, method='Integration', shape=sd_shape, k=None) / 100)
     ciexyz_D65_val = chromatic_adaptations_in_convert_with_XYZ(ciexyz_val, illuminant_XYZ_D65, illuminant_in_XYZ)
     return ciexyz_val, ciexyz_D65_val, None
+
 
 def process_Wavelength():
     wave = args.wave
@@ -961,8 +953,6 @@ def convert_with_XYZ(observer, illuminant):
 
     zcam = list(XYZ_to_ZCAM(ciexyz_x_100, illuminant_in_XYZ_x_100, L_A_ZCAM, Y_b_ZCAM, surround_zcam))
     zcam = list(np.round(float(format(item[1], '.15g')), 4) if item[1] is not None and item[1] == item[1] else '-' for item in zcam)
-
-
 
     # XYZ IS ADAPTED TO D65 FIRST FOR THESE SPACES
     hdript = np.round(XYZ_to_hdr_IPT(ciexyz_D65), 4)
@@ -1131,7 +1121,8 @@ def convert_with_XYZ(observer, illuminant):
     result('llab', llab, illuminant, observer, cat)
     result('luminance', lmnce, illuminant, observer, cat)
     result('mired', mired, illuminant, observer, cat)
-    #result('munsell_clr', munsell_clr, illuminant, observer, cat)
+    # commented out due to excessive length of processing / unreliable output
+    # result('munsell_clr', munsell_clr, illuminant, observer, cat)
     result('munsell_value', muns_value, illuminant, observer, cat)
     result('nayatani95', nayatani95, illuminant, observer, cat)
     result('oklab', oklab, illuminant, observer, cat)
@@ -1154,11 +1145,8 @@ def convert_with_XYZ(observer, illuminant):
 
     # CONVERT TO RGB COLOR SPACES
     if (model != 'RGB'):
-
-        if conversion_group == 'rgb' or conversion_group == 'all':
-
-            for colorspaceid in RGB_COLOURSPACES.keys():
-                convert_XYZ_to_RGB(colorspaceid,observer,illuminant,cat)
+        for colorspaceid in RGB_COLOURSPACES.keys():
+            convert_XYZ_to_RGB(colorspaceid, observer, illuminant, cat)
 
 
 def convert_XYZ_to_RGB(colorspaceid,observer,illuminant,cat):
@@ -1277,7 +1265,7 @@ def convert_to_CSS(cielab, cielchab, oklab, illuminant = False, observer = False
             linear_srgb_css = np.round(np.array(rgb_css_decoded), 3)
             linear_srgb_css_string = space_separated(linear_srgb_css)
             linear_srgb_css_color = f"color(srgb-linear {linear_srgb_css_string});"
-        elif rgb_css_colorspace == 'A98 RGB':
+        elif rgb_css_colorspace == 'Adobe RGB (1998)':
             a98_rgb_css_color = f"color(a98-rgb {rgb_css_string});"
         elif rgb_css_colorspace == 'Display P3':
             display_p3_css_color = f"color(display-p3 {rgb_css_string});"
@@ -1299,16 +1287,6 @@ def convert_to_CSS(cielab, cielchab, oklab, illuminant = False, observer = False
     result('prophoto_rgb_css_color', prophoto_rgb_css_color, illuminant, observer, cat)
     result('rec_2020_css_color', rec_2020_css_color, illuminant, observer, cat)
     result('srgb_css_color', srgb_css_color, illuminant, observer, cat)
-
-
-def space_separated(lst):
-    """return space separated values from list"""
-    return " ".join(map(str, lst))
-
-
-def space_separated_nosci(lst):
-    """return space separated values from list and suppress scientific notation"""
-    return " ".join(f"{x:.5f}" for x in lst)
 
 
 def result(model, value, illuminant = False, observer = False, cat = None, use_space_separated = False, no_scientific_notation = False):
@@ -1359,107 +1337,49 @@ if __name__ == "__main__":
     illuminant_list = args.illuminant_list
     precalc = args.precalc
     use_cats = args.cat
-    if use_cats is None:
-        use_cats = CHROMATIC_ADAPTATION_TRANSFORMS
-
-
-    # manager = Manager()
-
 
     # INITIALIZE OUTPUT WITH COLOR MODEL TEMPLATE NAMES AND DESCRIPTIONS TO FILL LATER WITH VALUES
     res = COLOR_MODELS_TEMPLATES
 
-    # replace already calculated items from precalculated
+    # replace already calculated items from pre-calculated
     if precalc != "":
         res = res | json.loads(precalc)
 
-
-
-    # RGB PROCESSING
     if model == 'RGB':
-
-        # CHECK IF THE VALUES ARE VALID
         red, green, blue, factor = validate_rgb_values(args.bitdepth, args.red, args.green, args.blue)
-
         rgb_norm = normalize(red, green, blue, factor)
-
         if input_colorspace in RGB_COLOURSPACES:
-
             # APPLY THE DECODING CCTF TO CREATE LINEAR RGB VALUES BEFORE CONVERTING
             linear_rgb = np.array(RGB_COLOURSPACES[input_colorspace].cctf_decoding(rgb_norm))
-
             # CONVERSIONS FROM RGB TO RGB COLOR SPACES, WITH ENCODING CCTF AT THE END, CONVERTING TO GAMMA CORRECTED VALUES
-
             for colorspaceid in RGB_COLOURSPACES.keys():
                 convert_RGB_to_RGB(colorspaceid)
-
-            # work on parallelize TODO
-            # with Pool() as mp_pool:
-                # mp_pool.map(convert_RGB_to_RGB,RGB_COLOURSPACES.keys())
-            # obsill = list()
-            # for observer in STANDARD_OBSERVERS:
-                # for illuminant in RGB_ILLUMINANTS_LIST:
-                    # obsill.append((observer,illuminant))
-
-
-            # with Pool() as mp_pool:
-                # mp_pool.starmap(convert_with_XYZ,obsill)
         else:
             res = {'error': 'RGB color space lookup failure'}
 
-    # END OF RGB PROCESSING
-
-
-    # CIELAB / CIELCHab PROCESSING
-
     elif model == 'CIELAB' and args.lstar is not None and args.astar is not None and args.bstar is not None or model == 'CIELCHab' and args.lchab_l_val is not None and args.lchab_ch_val is not None and args.lchab_ab_val is not None:
-
         if model == 'CIELCHab':
-            # check that the values are valid for the bit depth
             validated_lchab_l_val, validated_lchab_ch_val, validated_lchab_ab_val, factor = validate_cielchab_values(args.bitdepth, args.lchab_l_val, args.lchab_ch_val, args.lchab_ab_val)
             cielchab = np.array([validated_lchab_l_val, validated_lchab_ch_val, validated_lchab_ab_val])
             cielab = np.array(LCHab_to_Lab(cielchab))
         elif model == 'CIELAB':
-            # check that the values are valid for the bit depth
             validated_lstar, validated_astar, validated_bstar, factor = validate_cielab_values(args.bitdepth, args.lstar, args.astar, args.bstar)
             cielab = np.array([validated_lstar, validated_astar, validated_bstar])
             cielchab = np.array(Lab_to_LCHab(cielab))
 
-    # END OF CIELAB / CIELCHab PROCESSING
-
-
-    # CIELUV / CIELCHuv PROCESSING
-
     elif model == 'CIELUV' and args.l_val is not None and args.u_val is not None and args.v_val is not None or model == 'CIELCHuv' and args.lchuv_l_val is not None and args.lchuv_ch_val is not None and args.lchuv_uv_val is not None:
-
         if model == 'CIELCHuv':
-            # check that the values are valid for the bit depth
             validated_lchuv_l_val, validated_lchuv_ch_val, validated_lchuv_uv_val, factor = validate_cielchuv_values(args.bitdepth, args.lchuv_l_val, args.lchuv_ch_val, args.lchuv_uv_val)
             cielchuv = np.array([validated_lchuv_l_val, validated_lchuv_ch_val, validated_lchuv_uv_val])
         elif model == 'CIELUV':
-            # check that the values are valid for the bit depth
             validated_l_val, validated_u_val, validated_v_val, factor = validate_cieluv_values(args.bitdepth, args.l_val, args.u_val, args.v_val)
             cieluv = np.array([validated_l_val, validated_u_val, validated_v_val])
 
-    # END OF CIELUV / CIELCHuv PROCESSING
-
-
-    # CIEXYZ PROCESSING
-
     elif model == 'CIEXYZ' and args.x_val is not None and args.y_val is not None and args.z_val is not None:
-
-        # CHECK XYZ VALUES FOR BEING IN THE ACCEPTED RANGE
         validated_x_val, validated_y_val, validated_z_val, factor = validate_ciexyz_values(args.bitdepth, args.x_val, args.y_val, args.z_val)
         ciexyz = np.array([validated_x_val, validated_y_val, validated_z_val])
 
-    # END OF CIEXYZ PROCESSING
-
-
-    # SPECTRAL DISTRIBUTION PROCESSING
-
     elif model == 'Spectrum' and args.start is not None and args.stop is not None and args.interval is not None and args.data is not None:
-
-        # CHECK SPECTRAL VALUES FOR BEING IN THE ACCEPTABLE RANGE
         validated_start, validated_stop, validated_interval, validated_data = validate_spectrum_values(args.start, args.stop, args.interval, args.data)
         factor = 255
         interpolated_interval = args.intrpl_intrvl
@@ -1488,12 +1408,10 @@ if __name__ == "__main__":
 
         # PLOT THE SPECTRUM USING COLOUR / MATPLOTLIB
         if args.plotpath:
-
             plot_kwargs = [
                 {"illuminant": SDS_ILLUMINANTS[input_illuminant],
                 "cmfs": MSDS_CMFS[input_observer]},
             ]
-
             plot_multi_sds(
                 [sd * 100],
                 y_label="",
@@ -1506,7 +1424,6 @@ if __name__ == "__main__":
                 bounding_box=[300, 800, 0, 100],
                 plot_kwargs=plot_kwargs
             )
-
             locs, labels = xticks()
             xticks(np.arange(300, 800, step=50))
             locsy, labelsy = yticks()
@@ -1516,7 +1433,6 @@ if __name__ == "__main__":
             close()
 
         if args.spectype == "Emissive":
-
             # CALCULATIONS SPECIFIC TO EMISSIVE SPECTRAL DISTRIBUTIONS
             cri = np.round(colour_rendering_index(sd), 6)
             cqs = np.round(colour_quality_scale(sd), 6)
@@ -1532,25 +1448,16 @@ if __name__ == "__main__":
             result('lum_efficiency', lum_efficiency)
             result('lum_flux', lum_flux)
 
-            # Calculate SSI for the input spectrum vs all the standard
-            # illuminants
+            # Calculate SSI for the input spectrum vs all the standard illuminants
             for illuminant in CIE_ILLUMINANTS_LIST:
                 sd_test = SDS_ILLUMINANTS[illuminant]
                 ssi = spectral_similarity_index(sd_test, sd)
                 result('ssi', ssi, illuminant)
 
-    # END OF SPECTRAL DISTRIBUTION PROCESSING
-
-
-    # WAVELENGTH PROCESSING
-
     elif model == 'Wavelength' and args.wave is not None:
         validated_wave = validate_wave_value(args.wave)
         wave = validated_wave
         factor = 255
-
-    # END OF WAVELENGTH PROCESSING
-
 
     # CONVERSIONS REQUIRING XYZ AND STANDARD OBSERVER
     for observer in STANDARD_OBSERVERS:
@@ -1564,10 +1471,8 @@ if __name__ == "__main__":
             for illuminant in ISO_7589_ILLUMINANTS_LIST:
                 convert_with_XYZ(observer, illuminant)
 
-
     # SPECTRAL RECOVERY USING Jakob and Hanika (2019) Method
-    # we only produce values and an SVG for the input illuminant and 2 degree
-    # observer so as not to spin out too many iterations
+    # we only produce output for the input illuminant and 2 degree observer
     if model != "Spectrum":
         sr_cmfs = (
             MSDS_CMFS['CIE 1931 2 Degree Standard Observer']
@@ -1583,7 +1488,6 @@ if __name__ == "__main__":
                 {"illuminant": SDS_ILLUMINANTS['D65'],
                 "cmfs": MSDS_CMFS['CIE 1931 2 Degree Standard Observer']},
             ]
-
             plot_multi_sds(
                 [sr_sd * 100],
                 y_label="",
@@ -1596,7 +1500,6 @@ if __name__ == "__main__":
                 bounding_box=[360, 830, 0, 100],
                 plot_kwargs=plot_kwargs
             )
-
             locs, labels = xticks()
             xticks(np.arange(380, 820, step=40))
             locsy, labelsy = yticks()
@@ -1605,14 +1508,7 @@ if __name__ == "__main__":
             savefig(fname = args.plotpath)
             close()
 
-
-
     # OUTPUT COMPLETE ARRAY OF CONVERSIONS IN JSON FORMAT
-    dumped = json.dumps(res, cls=NumpyEncoder)
+    dumped = json.dumps(res, cls=NumpyEncoder, separators=(',', ':'))
     print(dumped)
-
-    # start = timeit.default_timer()
-    # stop = timeit.default_timer()
-    # execution_time = stop - start
-    # print("Executed in "+str(execution_time))
 

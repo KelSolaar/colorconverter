@@ -1,15 +1,12 @@
 COLOR CONVERTER
 
-Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  It also has basic support for spectra.  The script also intends to act as a testing script for the accuracy of the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive compact JSON array of the conversions and parameters.
+Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  It also has basic support for spectra.  The script also intends to act as a testing script for the accuracy of the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive compact JSON array of the conversions and parameters.  We recommend https://jsonviewer.stack.hu/ to see the output formatted.
 
 Please note that there are a number of hard-coded constants for CAMs and for spectral recovery.  It's possible to extend the script to include more permutations in the future for these, if desired. Aside from these known constraints, almost all color models and spaces supported by Colour are supported in this script.
 
-Basic command:
-python3 color_converter.py --red 124 --green 244 --blue 196
-
-We recommend https://jsonviewer.stack.hu/ to see the output formatted.
-
+```sh
 Options:
+
   -h, --help            show this help message and exit
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
   --precalc             Precalculated data in JSON format

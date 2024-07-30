@@ -6,6 +6,8 @@ Color converter is a comprehensive script for converting an input color to a wid
 
 <p>Please note that there are a number of hard-coded constants for CAMs and for spectral recovery.  It's possible to extend the script to include more permutations in the future for these, if desired. Aside from these known constraints, almost all color models and spaces supported by Colour are supported in this script.</p>
 
+<p>Pull requests and discussions are more than welcome - with a script of this complexity and scope, we expect this to be a community effort!  We're grateful to the Colour Science developers and community for promoting color science and supporting education, and hope this script proves to be a worthy contribution.    : )</p>
+
 Simplest input of RGB values:
 ```sh
 python3 colorconverter.py --red 132 --green 205 --blue 12

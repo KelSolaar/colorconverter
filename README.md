@@ -25,12 +25,12 @@ Note that the color model is inferred from the value arguments and doesn't need 
 Options:
 
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
-                        Default: 8
+                        Default: '8'
 
   --precalc             Precalculated data in JSON format
 
   --observer            Standard observer {CIE 1931 2 Degree Standard Observer, CIE 1964 10 Degree Standard Observer}
-                        Default: CIE 1931 2 Degree Standard Observer
+                        Default: 'CIE 1931 2 Degree Standard Observer'
 
   --input_illuminant    Standard illuminant of input values
                         {A, D50, D55, D65, D75, FL1, FL2, FL3, FL3.1, FL3.2, FL3.3, FL3.4, FL3.5, FL3.6, FL3.7, FL3.8,
@@ -45,7 +45,7 @@ Options:
                         Default: All
                         
   --illuminant_list     Which list of illuminants to use {CIE, ISO_7589, All}
-                        Default: All
+                        Default: 'All'
 
   --plotpath            Output spectral plot path; plot is not saved if argument is omitted. SVG extension is added if not provided
 

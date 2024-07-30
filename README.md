@@ -4,6 +4,14 @@ Color converter is a comprehensive script for converting an input color to a wid
 
 Please note that there are a number of hard-coded constants for CAMs and for spectral recovery.  It's possible to extend the script to include more permutations in the future for these, if desired. Aside from these known constraints, almost all color models and spaces supported by Colour are supported in this script.
 
+Simplest input of RGB values:
+python3 colorconverter.py --red 132 --green 205 --blue 12
+
+This would activate a number of default values, as described below.
+
+Complex input of RGB values:
+python3 colorconverter.py --red 132 --green 205 --blue 12 --bitdepth 16 --observer 'CIE 1964 10 Degree Standard Observer' --input_illuminant 'A' --cat 'CMCCAT2000' --illuminant_list 'CIE'
+
 ```sh
 Options:
 
@@ -62,6 +70,7 @@ RGB:
   --green               Green value, any bit depth
   --blue                Blue value, any bit depth
   --input_colorspace    RGB color space of input values
+                        Default: sRGB
 
 SPECTRUM:
   --start               Start of distribution, between 360-790 nm

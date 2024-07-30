@@ -80,7 +80,6 @@ RGB:
   --blue                Blue value, any bit depth
   --input_colorspace    RGB color space of input values
                         Default: sRGB
-
 SPECTRUM:
   --start               Start of distribution, between 360-790 nm
   --stop                End of distribution, between 400-830 nm

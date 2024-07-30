@@ -90,7 +90,6 @@ SPECTRUM:
   --tm30path            Path and filename for IES TM-30 Color Rendition Report; actual or interpolated interval must be 1-5 nm
   --tm30format          Format for IES TM-30 Color Rendition Report {Full, Intermediate, Simple}
                         
-
 WAVELENGTH:
   --wave                Wavelength in nm
 

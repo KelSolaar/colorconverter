@@ -1,31 +1,36 @@
 <h1>COLOR CONVERTER</h1>
+<h3></h3>&copy; 2024, Colorhythm LLC</h3>
+<br/><br/><br/>
+<p>
+Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  Additionally, it has basic support for spectra.  The script also intends to act as a testing method for conversions executed by the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive JSON array of the conversions and parameters.  We recommend https://jsonviewer.stack.hu/ to see the output formatted.</p>
 
-Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  Additionally, it has basic support for spectra.  The script also intends to act as a testing script for the accuracy of the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive JSON array of the conversions and parameters.  We recommend https://jsonviewer.stack.hu/ to see the output formatted.
+<p>Please note that there are a number of hard-coded constants for CAMs and for spectral recovery.  It's possible to extend the script to include more permutations in the future for these, if desired. Aside from these known constraints, almost all color models and spaces supported by Colour are supported in this script.</p>
 
-Please note that there are a number of hard-coded constants for CAMs and for spectral recovery.  It's possible to extend the script to include more permutations in the future for these, if desired. Aside from these known constraints, almost all color models and spaces supported by Colour are supported in this script.
+<p>Pull requests and discussions are more than welcome - with a script of this complexity and scope, we expect this to be a community effort!  We're grateful to the Colour Science developers and community for promoting color science and supporting education, and hope this script proves to be a worthy contribution.    : )</p>
 
 Simplest input of RGB values:
 ```sh
 python3 colorconverter.py --red 132 --green 205 --blue 12
 ```
 This would activate a number of default values, as described below.
-
+<br/><br/>
 
 Complex input of RGB values:
 ```sh
 python3 colorconverter.py --red 132 --green 205 --blue 12 --bitdepth '15+1' --observer 'CIE 1964 10 Degree Standard Observer' --input_illuminant 'A' --cat 'CMCCAT2000' --illuminant_list 'CIE'
 ```
-
+Note that the color model is inferred from the value arguments and doesn't need to be specified.
+<br/><br/>
 ```sh
 Options:
 
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
-                        Default: 8
+                        Default: '8'
 
   --precalc             Precalculated data in JSON format
 
   --observer            Standard observer {CIE 1931 2 Degree Standard Observer, CIE 1964 10 Degree Standard Observer}
-                        Default: CIE 1931 2 Degree Standard Observer
+                        Default: 'CIE 1931 2 Degree Standard Observer'
 
   --input_illuminant    Standard illuminant of input values
                         {A, D50, D55, D65, D75, FL1, FL2, FL3, FL3.1, FL3.2, FL3.3, FL3.4, FL3.5, FL3.6, FL3.7, FL3.8,
@@ -40,7 +45,7 @@ Options:
                         Default: All
                         
   --illuminant_list     Which list of illuminants to use {CIE, ISO_7589, All}
-                        Default: All
+                        Default: 'All'
 
   --plotpath            Output spectral plot path; plot is not saved if argument is omitted. SVG extension is added if not provided
 
@@ -75,7 +80,6 @@ RGB:
   --blue                Blue value, any bit depth
   --input_colorspace    RGB color space of input values
                         Default: sRGB
-
 SPECTRUM:
   --start               Start of distribution, between 360-790 nm
   --stop                End of distribution, between 400-830 nm
@@ -86,7 +90,6 @@ SPECTRUM:
   --tm30path            Path and filename for IES TM-30 Color Rendition Report; actual or interpolated interval must be 1-5 nm
   --tm30format          Format for IES TM-30 Color Rendition Report {Full, Intermediate, Simple}
                         
-
 WAVELENGTH:
   --wave                Wavelength in nm
 

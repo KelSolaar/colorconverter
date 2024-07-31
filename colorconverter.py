@@ -3219,7 +3219,7 @@ def convert_with_xyz(observer, illuminant):
     model_functions = {
         "CIELCHuv": process_cielchuv,
         "CIELAB": process_cielab_or_cielchab,
-        "CIELCHab": process_cielab_or_CIELCHab,
+        "CIELCHab": process_cielab_or_cielchab,
         "CIELUV": process_cieluv,
         "CIEXYZ": process_ciexyz,
         "Spectrum": process_spectrum,
@@ -3314,7 +3314,7 @@ def convert_with_xyz(observer, illuminant):
     )
 
     ciecam02 = XYZ_to_CIECAM02(
-        ciexyz_x_100, illuminant_in_xyz_x_100, L_A, Y_b, surround_ciecam02
+        ciexyz_x_100, illuminant_in_xyz_x_100, L_A, Y_B, surround_ciecam02
     )
     jmhciecam02 = CIECAM02_to_JMh_CIECAM02(ciecam02)
     cam02lcd = np.round(JMh_CIECAM02_to_CAM02LCD(jmhciecam02), 4)
@@ -3809,8 +3809,7 @@ def result(
             value = space_separated(value)
 
     if "codes" in res[model]:
-
-        if isinstance(value) != list and isinstance(value) != np.ndarray:
+        if not isinstance(value, (list, np.ndarray)):
             value = [value]
         value = dict(zip(res[model]["codes"], value))
 

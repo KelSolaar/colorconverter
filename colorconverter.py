@@ -2560,17 +2560,8 @@ class NumpyEncoder(json.JSONEncoder):
             return float(o)
         elif isinstance(o, np.ndarray):
             return o.tolist()
-        return json.JSONEncoder.default(self, o)
-
-
-class SetToNone(argparse.Action):
-    """Allow 'None' as a choice for chromatic adaptation transforms"""
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        if values == ["None"]:
-            setattr(namespace, self.dest, None)
         else:
-            setattr(namespace, self.dest, values)
+            return super().default(o)
 
 
 def space_separated(lst):
@@ -2607,15 +2598,44 @@ def normalize(a, b, c, factor):
     return np.array([a, b, c]) / factor
 
 
+class SetToNone(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values == ["None"]:
+            setattr(namespace, self.dest, None)
+        else:
+            setattr(namespace, self.dest, values)
+
+
+class MyParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_help()
+        sys.stderr.write("Error: %s\n" % message)
+        sys.exit(2)
+
+
+def determine_color_model(args):
+    """Determine the color model based on provided arguments."""
+    if args.lstar is not None and args.astar is not None and args.bstar is not None:
+        return "CIELAB"
+    if args.lchab_l_val is not None and args.lchab_ch_val is not None and args.lchab_ab_val is not None:
+        return "CIELCHab"
+    if args.l_val is not None and args.u_val is not None and args.v_val is not None:
+        return "CIELUV"
+    if args.lchuv_l_val is not None and args.lchuv_ch_val is not None and args.lchuv_uv_val is not None:
+        return "CIELCHuv"
+    if args.x_val is not None and args.y_val is not None and args.z_val is not None:
+        return "CIEXYZ"
+    if args.red is not None and args.green is not None and args.blue is not None:
+        return "RGB"
+    if args.start is not None and args.stop is not None and args.interval is not None and args.data is not None:
+        return "Spectrum"
+    if args.wave is not None:
+        return "Wavelength"
+    return None
+
+
 def parse_arguments():
     """Set up argument parser and define command line arguments"""
-
-    class MyParser(argparse.ArgumentParser):
-        def error(self, message):
-            self.print_help()
-            sys.stderr.write("Error: %s\n" % message)
-            sys.exit(2)
-
     parser = MyParser(usage="")
 
     # 8 bpc (0-255), 15+1 (0-32768), 16 bpc (0-65535), 32 bpc (0-1)
@@ -2787,37 +2807,7 @@ def parse_arguments():
     if args.plotpath is not None and args.plotpath[-4:] != ".svg":
         args.plotpath = args.plotpath + ".svg"
 
-    model = None
-
-    if args.lstar is not None and args.astar is not None and args.bstar is not None:
-        model = "CIELAB"
-    if (
-        args.lchab_l_val is not None
-        and args.lchab_ch_val is not None
-        and args.lchab_ab_val is not None
-    ):
-        model = "CIELCHab"
-    if args.l_val is not None and args.u_val is not None and args.v_val is not None:
-        model = "CIELUV"
-    if (
-        args.lchab_l_val is not None
-        and args.lchuv_ch_val is not None
-        and args.lchuv_uv_val is not None
-    ):
-        model = "CIELCHuv"
-    if args.x_val is not None and args.y_val is not None and args.z_val is not None:
-        model = "CIEXYZ"
-    if args.red is not None and args.green is not None and args.blue is not None:
-        model = "RGB"
-    if (
-        args.start is not None
-        and args.stop is not None
-        and args.interval is not None
-        and args.data is not None
-    ):
-        model = "Spectrum"
-    if args.wave is not None:
-        model = "Wavelength"
+    model = determine_color_model(args)
 
     if model is None:
         parser.error("Full set of input values for one of the color models is required")

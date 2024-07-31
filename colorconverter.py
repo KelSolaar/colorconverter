@@ -1,6 +1,6 @@
 """
-Color Conversion Utility
-========================
+Color Converter
+===============
 
 This script provides a comprehensive set of functions and CLI options to
 convert between various color models and spaces using the Colour Science Python library.

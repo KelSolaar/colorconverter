@@ -92,4 +92,4 @@ SPECTRUM:
                         
 WAVELENGTH:
   --wave                Wavelength in nm
-
+```

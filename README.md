@@ -1,6 +1,6 @@
 <h1>COLOR CONVERTER</h1>
 <h3></h3>&copy; 2024, Colorhythm LLC</h3>
-<br/><br/><br/>
+<br/><br/>
 <p>
 Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  Additionally, it has basic support for spectra.  The script also intends to act as a testing method for conversions executed by the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive JSON array of the conversions and parameters.  We recommend https://jsonviewer.stack.hu/ to see the output formatted.</p>
 

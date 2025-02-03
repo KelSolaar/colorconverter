@@ -1,6 +1,6 @@
 <h1>COLOR CONVERTER</h1>
-<h3></h3>&copy; 2024, Colorhythm LLC</h3>
-<br/><br/><br/>
+<h3></h3>&copy; 2024-2025, Colorhythm LLC</h3>
+<br/><br/>
 <p>
 Color converter is a comprehensive script for converting an input color to a wide range of color models, color spaces, illuminants, chromatic adaptation transforms, and observers.  Additionally, it has basic support for spectra.  The script also intends to act as a testing method for conversions executed by the superb Colour Science library, https://www.colour-science.org/   There are a number of plots that can be emitted as well, including spectral plots and IES TM-30 reports.  The code also prints a massive JSON array of the conversions and parameters.  We recommend https://jsonviewer.stack.hu/ to see the output formatted.</p>
 
@@ -21,7 +21,7 @@ python3 colorconverter.py --red 132 --green 205 --blue 12 --bitdepth '15+1' --ob
 ```
 Note that the color model is inferred from the value arguments and doesn't need to be specified.
 <br/><br/>
-```sh
+<pre>
 Options:
 
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
@@ -92,4 +92,4 @@ SPECTRUM:
                         
 WAVELENGTH:
   --wave                Wavelength in nm
-
+</pre>

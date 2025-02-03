@@ -24,6 +24,9 @@ Note that the color model is inferred from the value arguments and doesn't need 
 <pre>
 Options:
 
+  --show_warnings       Show Colour runtime and usage warnings, along with Python warnings.
+                        If not present, defaults to suppressing warnings.
+
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
                         Default: '8'
 
@@ -43,7 +46,7 @@ Options:
                         {Bianco 2010, Bianco PC 2010, Bradford, CAT02, CAT02 Brill 2008, CAT16, CMCCAT97, CMCCAT2000,
                         Fairchild, Sharp, Von Kries, XYZ Scaling, None}
                         Default: All
-                        
+
   --illuminant_list     Which list of illuminants to use {CIE, ISO_7589, All}
                         Default: 'All'
 
@@ -89,7 +92,7 @@ SPECTRUM:
   --intrpl_intrvl       Smaller interval to interpolate to, between 1-5 nm
   --tm30path            Path and filename for IES TM-30 Color Rendition Report; actual or interpolated interval must be 1-5 nm
   --tm30format          Format for IES TM-30 Color Rendition Report {Full, Intermediate, Simple}
-                        
+
 WAVELENGTH:
   --wave                Wavelength in nm
 </pre>

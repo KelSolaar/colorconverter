@@ -21,7 +21,7 @@ python3 colorconverter.py --red 132 --green 205 --blue 12 --bitdepth '15+1' --ob
 ```
 Note that the color model is inferred from the value arguments and doesn't need to be specified.
 <br/><br/>
-
+<pre>
 Options:
 
   --bitdepth            Bit depth of input values {8, 15+1, 16, 32}
@@ -92,4 +92,4 @@ SPECTRUM:
                         
 WAVELENGTH:
   --wave                Wavelength in nm
-
+</pre>

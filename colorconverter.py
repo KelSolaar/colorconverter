@@ -1,3 +1,10 @@
+# /// script
+# dependencies = [
+#     "colour-science",
+#     "matplotlib",
+# ]
+# ///
+
 """
 Color Converter
 ===============
